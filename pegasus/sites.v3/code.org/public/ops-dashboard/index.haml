@@ -312,7 +312,7 @@ theme: angular
             });
         } else { // new
           cohort =
-            cohortsService.save(cohort, function() {
+            cohortsService.save({}, {cohort: cohort}, function() {
               $location.path("/cohorts");
             });
         }
