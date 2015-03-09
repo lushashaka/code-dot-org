@@ -147,10 +147,6 @@ module LevelsHelper
       level_prop['stepOnly'] = step_mode == 2
     end
 
-    # Pass blockly the edit mode: "<start|toolbox|required>_blocks"
-    level_prop['edit_blocks'] = params[:type]
-    level_prop['edit_blocks_success'] = t('builder.success')
-
     # Map Dashboard-style names to Blockly-style names in level object.
     # Dashboard underscore_names mapped to Blockly lowerCamelCase, or explicit 'Dashboard:Blockly'
     Hash[%w(
@@ -308,10 +304,17 @@ module LevelsHelper
     app_options[:level_source_id] = @level_source.id if @level_source
     app_options[:send_to_phone_url] = @phone_share_url if @phone_share_url
 
+    ## Edit blocks-dependent options
+    if @edit_blocks
+      # Pass blockly the edit mode: "<start|toolbox|required>_blocks"
+      level_options['edit_blocks'] = @edit_blocks
+      level_options['edit_blocks_success'] = t('builder.success')
+    end
+
     ## User/session-dependent options
     app_options[:callouts] = @callouts
     app_options[:autoplayVideo] = @autoplay_video_info
-    app_options[:disableSocialShare] = true if (current_user && current_user.under_13?) || @embed
+    app_options[:disableSocialShare] = true if (@current_user && @current_user.under_13?) || @embed
     app_options[:applabUserId] = @applab_user_id
     app_options[:report] = {
         fallback_response: @fallback_response,
