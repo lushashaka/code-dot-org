@@ -78,6 +78,12 @@ class Table
     end
   end
 
+  def self.table_names(channel_id)
+    PEGASUS_DB[:app_tables].where(app_id:channel_id, storage_id:nil).group(:table_name).map do |row|
+      row[:table_name]
+    end
+  end
+
 end
 
 require 'aws-sdk'
@@ -98,7 +104,7 @@ class DynamoTable
     @hash = "#{@channel_id}:#{@table_name}:#{@storage_id}"
   end
   
-  def db()
+  def self.db()
     @@dynamo_db ||= Aws::DynamoDB::Client.new(
       region: 'us-east-1',
       access_key_id: CDO.s3_access_key_id, 
@@ -179,6 +185,8 @@ class DynamoTable
         table_name:CDO.dynamo_table_name,
         item:{
           hash:@hash, 
+          channel_id:@channel_id,
+          table_name:@table_name,
           row_id:row_id,
           updated_at:DateTime.now.to_s,
           updated_ip:ip_address,
@@ -270,6 +278,32 @@ class DynamoTable
   
   def value_from_row(row)
     JSON.load(row['value']).merge(id:row['row_id'].to_i)
+  end
+
+  def self.table_names(channel_id)
+    last_evaluated_key = nil
+    results = {}
+    begin
+      page = db.query(
+        table_name:CDO.dynamo_table_name,
+        index_name:'channel_id-table_name-index',
+        key_conditions: {
+          "channel_id" => {
+            attribute_value_list: [channel_id.to_i],
+            comparison_operator: "EQ",
+          },
+        },
+        attributes_to_get:['table_name'],
+        exclusive_start_key:last_evaluated_key,
+      ).first
+
+      page[:items].each do |item|
+        results[item['table_name']] = true
+      end
+
+      last_evaluated_key = page[:last_evaluated_key]
+    end while last_evaluated_key
+    results.keys
   end
   
 end
