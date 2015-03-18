@@ -268,7 +268,7 @@ class DynamoTable
         ).first
 
         page[:items].each do |item|
-          results << value_from_row(item)
+          results << value_from_item(item)
         end
 
         last_evaluated_key = page[:last_evaluated_key]
@@ -276,8 +276,8 @@ class DynamoTable
     end
   end
   
-  def value_from_row(row)
-    JSON.load(row['value']).merge(id:row['row_id'].to_i)
+  def value_from_item(item)
+    JSON.load(item['value']).merge(id:item['row_id'].to_i)
   end
 
   def self.table_names(channel_id)
