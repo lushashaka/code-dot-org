@@ -70,9 +70,9 @@ def load_configuration()
     'ruby_installer'              => rack_env == :development ? 'rbenv' : 'system',
     'root_dir'                    => root_dir,
     'use_dynamo_tables'           => false,#[:staging, :production].include?(rack_env),
-    'dynamo_table_name'           => "#{rack_env}_tables",
+    'dynamo_tables_table'           => "#{rack_env}_tables",
     'use_dynamo_properties'       => false,
-    'dynamo_properties_name'      => "#{rack_env}_properties"
+    'dynamo_properties_table'      => "#{rack_env}_properties"
   }.tap do |config|
     raise "'#{rack_env}' is not known environment." unless config['rack_envs'].include?(rack_env)
     ENV['RACK_ENV'] = rack_env.to_s unless ENV['RACK_ENV']
